@@ -83,6 +83,18 @@ def extractHeaders(headers):
             pass
     return sorted_headers
 
+def flatten_dictionaries(input_):
+    output = dict()
+    try:
+        if isinstance(input_, list):
+            for map_ in input_:
+                output.update(map_)
+        else:  # Not a list of dictionaries
+            output = input_
+    except Exception as e:
+        return False
+    else:
+        return output
 
 def replaceValue(mapping, old, new, strategy=None):
     """
@@ -274,3 +286,34 @@ def escaped(position, string):
             return True
     else:
         return False
+
+
+def clean_colors(string,color=None):
+    colorcode = {'white': '\x1b[97m',
+    'green': '\x1b[92m',
+    'red': '\x1b[91m',
+    'yellow': '\x1b[93m',
+    'end': '\x1b[0m',
+    'back': '\x1b[7;91m',
+    'info': '\x1b[93m[!]\x1b[0m',
+    'que': '\x1b[94m[?]\x1b[0m',
+    'bad': '\x1b[91m[-]\x1b[0m',
+    'good': '\x1b[92m[+]\x1b[0m',
+    'run': '\x1b[97m[~]\x1b[0m'}
+    
+    if not color:
+        new_str = ''
+        for i in colorcode.values():
+            new_str = string.replace(i,'')
+            string = new_str
+        return new_str
+    else:
+        return string.replace(colorcode[color],'')
+
+def convert_cookiejar_to_dict(cookie_jar):
+    cookies = dict()
+    cookies_str = ""
+    for key,val in cookie_jar.items():
+        cookies_str += '{}={};'.format(key,val)
+    cookies = {"Cookie" : cookies_str}
+    return cookies

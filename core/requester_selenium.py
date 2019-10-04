@@ -12,10 +12,15 @@ from core.globalVars import container
 
 logger = setup_logger(__name__)
 
-
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
-def requester(url, data, headers, GET, delay, timeout):
+def requester(url,data,headers,GET,delay,timeout):
+    if url == 'https://portal.biznetgio.net/signout':
+        print("URL CHANGED")
+        url = 'https://portal.biznetgio.net/dashboard'
+    print("====================URL=====================")
+    print(url)
+    print("============================================")
+    webdriver = container.vars['driver']
     if getVar('jsonData'):
         data = converter(data)
     elif getVar('path'):
@@ -34,17 +39,24 @@ def requester(url, data, headers, GET, delay, timeout):
     logger.debug('Requester GET: {}'.format(GET))
     logger.debug_json('Requester data:', data)
     logger.debug_json('Requester headers:', headers)
-    
     try:
         if GET:
-            response = requests.get(url, params=data, headers=headers,
+            response = webdriver.request('GET',url, params=data, headers=headers,
                                     timeout=timeout, verify=False, proxies=core.config.proxies)
         elif getVar('jsonData'):
-            response = requests.post(url, json=data, headers=headers,
+            response = webdriver.request('POST',url, json=data, headers=headers,
                                     timeout=timeout, verify=False, proxies=core.config.proxies)
         else:
-            response = requests.post(url, data=data, headers=headers,
+            response = webdriver.request('POST',url, data=data, headers=headers,
                                      timeout=timeout, verify=False, proxies=core.config.proxies)
+        if url == 'https://portal.biznetgio.net/other-services':
+            print("==================================RESPONSE======================================")
+            print(response.text)
+            print("===============================RESPONSE END=====================================")
+        
+            print("==================================Container======================================")
+            print(container.vars)
+            print("===============================Cookies END=====================================")
 
         return response
     except ProtocolError:

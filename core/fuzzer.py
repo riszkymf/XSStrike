@@ -13,7 +13,9 @@ logger = setup_logger(__name__)
 
 
 def fuzzer(url, params, headers, GET, delay, timeout, WAF, encoding):
+    fuzzer_report = list()
     for fuzz in fuzzes:
+        report = dict()
         if delay == 0:
             delay = 0
         t = delay + randint(delay, delay * 2) + counter(fuzz)
@@ -21,6 +23,7 @@ def fuzzer(url, params, headers, GET, delay, timeout, WAF, encoding):
         try:
             if encoding:
                 fuzz = encoding(unquote(fuzz))
+                report['encoding'] = str(encoding)
             data = replaceValue(params, xsschecker, fuzz, copy.deepcopy)
             response = requester(url, data, headers, GET, delay/2, timeout)
         except:
@@ -45,9 +48,16 @@ def fuzzer(url, params, headers, GET, delay, timeout, WAF, encoding):
             fuzz = encoding(fuzz)
         if fuzz.lower() in response.text.lower():  # if fuzz string is reflected in the response
             result = ('%s[passed]  %s' % (green, end))
+            result_report = 'passed'
         # if the server returned an error (Maybe WAF blocked it)
         elif str(response.status_code)[:1] != '2':
             result = ('%s[blocked] %s' % (red, end))
+            result_report = 'blocked'
         else:  # if the fuzz string was not reflected in the response completely
             result = ('%s[filtered]%s' % (yellow, end))
+            result_report = 'filtered'
         logger.info('%s %s' % (result, fuzz))
+        report['fuzz_string'] = fuzz
+        report['status'] = result_report
+        fuzzer_report.append(report)
+    return fuzzer_report
