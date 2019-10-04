@@ -198,21 +198,43 @@ def main_scanner(uri, response):
         return result
 
 def retireJs(url, response):
+    vulnerable_component = list()
     scripts = js_extractor(response)
-    for script in scripts:
+    for index,script in enumerate(scripts):
         if script not in getVar('checkedScripts'):
             updateVar('checkedScripts', script, 'add')
             uri = handle_anchor(url, script)
             response = requester(uri, '', getVar('headers'), True, getVar('delay'), getVar('timeout')).text
             result = main_scanner(uri, response)
             if result:
+                component_report = dict()
                 logger.red_line()
                 logger.good('Vulnerable component: ' + result['component'] + ' v' + result['version'])
                 logger.info('Component location: %s' % uri)
                 details = result['vulnerabilities']
                 logger.info('Total vulnerabilities: %i' % len(details))
+                component_report['vulnerable_component'] = result['component']+' v'+ result['version']
+                component_report['component_location'] = uri
+                component_report['total_vulnerabilities'] = len(details)
+                component_report['details'] = list()
                 for detail in details:
-                    logger.info('%sSummary:%s %s' % (green, end, detail['identifiers']['summary']))
-                    logger.info('Severity: %s' % detail['severity'])
-                    logger.info('CVE: %s' % detail['identifiers']['CVE'][0])
+                    detail_report = dict()
+
+                    identifiers = detail['identifiers']
+                    summary = identifiers.get('summary',"None")
+                    severity = identifiers.get('severity',"None")
+                    _cve = identifiers.get('CVE',["None"])
+                    cve = _cve[0]
+
+                    logger.info('%sSummary:%s %s' % (green, end, summary))
+                    logger.info('Severity: %s' % severity)
+                    logger.info('CVE: %s' % cve)
+                    
+                    detail_report['summary'] = summary
+                    detail_report['severity'] = severity
+                    detail_report['cve'] = cve
+                    component_report['details'].append(detail_report)
                 logger.red_line()
+                print("\n{}\n".format(component_report))
+                vulnerable_component.append(component_report)
+    return vulnerable_component
