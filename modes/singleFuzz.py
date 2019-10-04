@@ -13,6 +13,8 @@ logger = setup_logger(__name__)
 
 
 def singleFuzz(target, paramData, encoding, headers, delay, timeout):
+    report = dict()
+    config = dict()
     GET, POST = (False, True) if paramData else (True, False)
     # If the user hasn't supplied the root url with http(s), we will handle it
     if not target.startswith('http'):
@@ -28,20 +30,34 @@ def singleFuzz(target, paramData, encoding, headers, delay, timeout):
     url = getUrl(target, GET)
     logger.debug('Single fuzz url: {}'.format(url))
     params = getParams(target, paramData, GET)
+    config['target'] = target
+    config['host'] = host
+    config['url'] = url
     logger.debug_json('Single fuzz params:', params)
     if not params:
+        config['param'] = 'No paramaters to test'
+        report['config'] = config
         logger.error('No parameters to test.')
         quit()
     WAF = wafDetector(
         url, {list(params.keys())[0]: xsschecker}, headers, GET, delay, timeout)
     if WAF:
+        waf_status = WAF
         logger.error('WAF detected: %s%s%s' % (green, WAF, end))
     else:
+        waf_status = "offline"
         logger.good('WAF Status: %sOffline%s' % (green, end))
-
+    report['waf'] = waf_status
+    report['parameters'] = list()
     for paramName in params.keys():
+        paramReport = dict()
+        paramReport['paramater'] = paramName
         logger.info('Fuzzing parameter: %s' % paramName)
         paramsCopy = copy.deepcopy(params)
         paramsCopy[paramName] = xsschecker
-        fuzzer(url, paramsCopy, headers, GET,
+        result = fuzzer(url, paramsCopy, headers, GET,
                delay, timeout, WAF, encoding)
+        paramReport['result'] = result
+    report['parameters'] = paramReport
+    report['config'] = config
+    print(report)
